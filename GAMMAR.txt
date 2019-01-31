@@ -1,0 +1,91 @@
+
+procedure :  PROCEDURE_TOKEN ID_TOKEN args contract  IS_TOKEN declarations  BEGIN_TOKEN procedure_body END_TOKEN ID_TOKEN PV_TOKEN
+
+args :  eps | PO_TOKEN args_dec PF_TOKEN 
+
+args_dec : arg_dec arg_dec_aux
+
+arg_dec_aux : eps | PV_TOKEN  arg_dec arg_dec_aux 
+
+arg_dec : id_tokens P_TOKEN (IN_TOKEN)? (OUT_TOKEN)? type      
+
+id_tokens : ID_TOKEN  id_tokens_aux 
+
+id_tokens_aux : eps | V_TOKEN ID_TOKEN id_tokens_aux
+
+type : NATURAL_TOKEN | INTEGER_TOKEN |  POSITIVE_TOKEN | CHARACTER_TOKEN
+
+contract : eps | WITH_TOKEN modes 
+
+modes : mode mode_aux 
+
+mode_aux : eps |V_TOKEN mode mode_aux
+
+mode : spark_mode | global_mode | depends_mode | pre_mode | post_mode 
+
+spark_mode : SPARK_MODE_TOKEN  IMP_TOKEN  (ON_TOKEN | OFF_TOKEN)
+
+global_mode : GLOBAL_TOKEN IMP_TOKEN NULL_TOKEN
+
+depends_mode : DEPENDS_TOKEN IMP_TOKEN PO_TOKEN ID_TOKEN IMP_TOKEN ID_TOKEN PF_TOKEN
+
+pre_mode : PRE_TOKEN IMP_TOKEN condition
+
+post_mode : POST_TOKEN IMP_TOKEN condition 
+
+declarations : eps | declaration PV_TOKEN declarations 
+
+declaration :   var_declaration | procedure 
+
+var_declaration : ID_TOKEN P_TOKEN (CONSTANT_TOKEN)? type  AFF_TOKEN (NUM_TOKEN | ID_TOKEN) 
+
+procedure_body : instructions 
+
+instructions : instruction PV_TOKEN instruction_aux
+
+instruction_aux : eps | instruction PV_TOKEN instructions  
+
+instruction : NULL_TOKEN   | for_ins | if_ins | while_ins | aff_ins | proc_aff 
+
+for_ins : FOR_TOKEN ID_TOKEN IN_TOKEN (REVERSE_TOKEN)? range LOOP_TOKEN instructions END_TOKEN LOOP_TOKEN
+
+range :  (NUM_TOKEN|ID_TOKEN) PT_TOKEN PT_TOKEN (NUM_TOKEN|ID_TOKEN) 
+
+aff_ins : ID_TOKEN AFF_TOKEN exp 
+
+exp :  term termaux 
+
+termaux : eps |(+|-) term termaux 
+
+term : fact factaux 
+
+factaux :eps | (*|/) fact factaux 
+
+fact : NUM_TOKEN | ID_TOKEN | exp 
+
+if_ins : IF_TOKEN condition THEN_TOKEN instructions elseaux END_TOKEN IF_TOKEN 
+
+elseaux : eps | ELSE_TOKEN instructions 
+
+condition : exp (EG_TOKEN | DIFF_TOKEN | INF_TOKEN | SUP_TOKEN | INFEG_TOKEN | SUPEG_TOKEN ) exp
+
+while_ins : WHILE_TOKEN condition LOOP_TOKEN instructions END_TOKEN LOOP_TOKEN 
+
+
+
+
+
+
+
+
+type_declaration : TYPE_TOKEN ID_TOKEN IS_TOKEN  ( array_declaration | PRIVATE_TOKEN | NEW_TOKEN type |  record_declaration) 						PV_TOKEN
+
+record_declaration : RECORD_TOKEN  (ID_TOKEN P_TOKEN type PV_TOKEN)+  END_TOKEN RECORD _TOKEN
+
+array_dec : ARRAY_TOKEN PO_TOKEN range PF_TOKEN OF_TOKEN ( type | ID_TOKEN ) 
+
+
+
+
+
+
