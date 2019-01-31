@@ -1,0 +1,9 @@
+function  can be without arguments  exp function F return Integer is bla bla bla  bach declariha kadir F 
+fucntion with arguemnts exp function F (X : in out Integer)  return Integer is bla bla  bach declariha F(G)
+declaration of variables in a function comes before begin and after IS
+Assert(amal=5);
+in out arguments in function is illegal 
+
+
+
+
