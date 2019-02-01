@@ -7,7 +7,11 @@ args_dec : arg_dec arg_dec_aux
 
 arg_dec_aux : eps | PV_TOKEN  arg_dec arg_dec_aux 
 
-arg_dec : id_tokens P_TOKEN (IN_TOKEN)? (OUT_TOKEN)? type      
+arg_dec : id_tokens P_TOKEN in out type   
+
+in : eps | IN_TOKEN 
+
+out : OUT_TOKEN | eps  
 
 id_tokens : ID_TOKEN  id_tokens_aux 
 
@@ -49,7 +53,7 @@ instruction : NULL_TOKEN   | for_ins | if_ins | while_ins | aff_ins | proc_aff
 
 for_ins : FOR_TOKEN ID_TOKEN IN_TOKEN (REVERSE_TOKEN)? range LOOP_TOKEN instructions END_TOKEN LOOP_TOKEN
 
-range :  (NUM_TOKEN|ID_TOKEN) PT_TOKEN PT_TOKEN (NUM_TOKEN|ID_TOKEN) 
+range :  (NUM_TOKEN|ID_TOKEN) PT_TOKEN PT_TOKEN (NUM_TOKEN|ID_TOKENg 
 
 aff_ins : ID_TOKEN AFF_TOKEN exp 
 

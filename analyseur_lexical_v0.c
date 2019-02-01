@@ -1,122 +1,21 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include"analyseur_lexical_v0.h"
 
 
-
-typedef enum TOKENS
-{
-
-PROCEDURE_TOKEN  = 1000,
-IN_TOKEN          = 1001,
-OUT_TOKEN        = 1002,
-WITH_TOKEN       = 1003,
-GLOBAL_TOKEN     = 1004,
-DEPENDS_TOKEN   = 1005,
-NUM_TOKEN = 1006,
-PRE_TOKEN  = 1007,
-POST_TOKEN = 1008,
-INTEGER_TOKEN = 1009,
-BEGIN_TOKEN = 1010,
-END_TOKEN = 1011,
-OLD_TOKEN = 1012,
-PV_TOKEN  = 1013,
-LAST_TOKEN = 1014,
-RETURN_TOKEN = 1015,
-FUNCTION_TOKEN = 1016,
-IS_TOKEN = 1017,
-CONSTANT_TOKEN = 1018,
-PLUS_TOKEN = 1019,
-AFF_TOKEN = 1020,
-EG_TOKEN = 1021,
-PO_TOKEN = 1022,
-PF_TOKEN = 1023,
-P_TOKEN  = 1024,
-PT_TOKEN = 1025,
-NULL_TOKEN = 1026,
-PACKAGE_TOKEN = 1027,
-BODY_TOKEN  = 1028,
-COMS_TOKEN = 1029,
-NATURAL_TOKEN = 1030,
-AND_TOKEN  = 1031,
-OR_TOKEN  = 1032,
-SPARK_MODE_TOKEN = 1033,
-PRAGMA_TOKEN  = 1034,
-ASSERT_TOKEN = 1035,
-TYPF_TOKEN = 1036,
-NEW_TOKEN =1037,
-PRIVATE_TOKEN = 1038,
-ARRAY_TOKEN = 1039,
-OF_TOKEN = 1040,
-OFF_TOKEN = 1041,
-POSITIVE_TOKEN = 1042,
-RECORD_TOKEN = 1043,
-FIRST_TOKEN = 1044,
-RANGE_TOKEN = 1045,
-SUBTYPE = 1046,
-RAISE_TOKEN = 1047,
-LOOP_TOKEN = 1048,
-THEN_TOKEN = 1049,
-IF_TOKEN = 1050,
-EXCEPTION_TOKEN = 1051,
-V_TOKEN = 1052,
-STRING_TOKEN = 1053,
-CHARACTER_TOKEN = 1054,
-INF_TOKEN = 1055,
-SUP_TOKEN = 1056,
-DIFF_TOKEN =1057,
-IMP_TOKEN =1058,
-FOR_TOKEN  =1059,
-ERREUR_TOKEN =1060,
-REVERSE_TOKEN =1061,
-INFEG_TOKEN =1062,
-SUPEG_TOKEN =1063,
-WHILE_TOKEN =1064,
-PUT_TOKEN =1065,
-GET_TOKEN =1066,
-ID_TOKEN = 1067,
-COMMENTAIRE_TOKEN = 1068,
-EOF_TOKEN = 1069,
-MOINS_TOKEN = 1070,
-MUL_TOKEN = 1071,
-DIV_TOKEN = 1072
-
-
-
-}TOKENS;
 
 
 /////////////STRUCT TOKEN ///////////
-typedef  struct {
-
-    TOKENS CODE; char NOM[100];
-
-}Token_sym_Cour;
 
 
 
-typedef enum{
-    ERR_CAR_INC,ERR_FICH_VID,
-    ERR_ID_LONG,ERR_COMM
-}CODES_ERREURS;
 
-typedef  struct{
-    CODES_ERREURS CODE_ERR; char message[40];
-}Erreurs;
-
-
-Erreurs MES_ERR[100]={{ERR_CAR_INC,"Caractère inconnu"},{ERR_FICH_VID,"Fichier vide"},{ERR_ID_LONG, "Identifiant très long" },{ERR_COMM,"Commentaire non correct"}};
-
-// Variables Globales
-
-char car_Cour;                  //caractère courant
-Token_sym_Cour sym_Cour;                //symbole courant
-FILE* fichier;
 
 
 void Gen_Erreur(CODES_ERREURS  ERR){
     int  ind=ERR;
-    printf( "Erreur numéro %d : %s \n", ind, MES_ERR[ind].message);
+    printf( "Erreur numéro %d : %s \n", ind, MES_ERR[ind+1].message);
     exit(1);
 }
 
@@ -126,6 +25,7 @@ void lireCar(){
 
 
 void lireMot(){
+    memset(sym_Cour.NOM , '\0' , 100); 
     sym_Cour.NOM[0]=car_Cour;
     int i =1;
     lireCar();
@@ -243,6 +143,7 @@ void lireMot(){
 }
 
 void lireNombre(){
+    memset(sym_Cour.NOM , '\0' , 100); 
     sym_Cour.NOM[0] = car_Cour;
     int i =1;
     lireCar();
@@ -319,6 +220,8 @@ void afficherToken(){
         case 1070 : printf("MOINS_TOKEN"); break;
         case 1071 : printf("MUL_TOKEN"); break;
         case 1072 : printf("DIV_TOKEN"); break;
+        case 1062 : printf("INFEG_TOKEN"); break;
+        case 1063 : printf("SUPEG_TOKEN"); break;
 
 
 
@@ -343,6 +246,8 @@ void sym_Suiv(){
         sym_Cour.CODE = EOF_TOKEN;
     }
     else{
+        memset(sym_Cour.NOM , '\0' , 100); 
+        sym_Cour.NOM[0]=car_Cour;
         switch(car_Cour){
             case '+' : sym_Cour.CODE = PLUS_TOKEN; lireCar();break;//+
             case '*' : sym_Cour.CODE = MUL_TOKEN; lireCar();break;//*
@@ -350,26 +255,25 @@ void sym_Suiv(){
             case '-' : sym_Cour.CODE = MOINS_TOKEN; lireCar();break;//-
             case '(' : sym_Cour.CODE = PO_TOKEN; lireCar();break;//(
             case ')' : sym_Cour.CODE = PF_TOKEN; lireCar();break;//)
-            case '.' : sym_Cour.CODE = P_TOKEN; lireCar();break;//.
+            case '.' : sym_Cour.CODE = PT_TOKEN; lireCar();break;//.
             case '/' : sym_Cour.CODE = DIV_TOKEN; lireCar();break;// /
             case ';' : sym_Cour.CODE = PV_TOKEN; lireCar();break;// ;
             case '<' :
                 lireCar();
-                if (car_Cour =='=') {sym_Cour.CODE= INFEG_TOKEN;lireCar();}
-                else if (car_Cour =='>') {sym_Cour.CODE = DIFF_TOKEN;lireCar();}
+                if (car_Cour =='=') {sym_Cour.CODE= INFEG_TOKEN;sym_Cour.NOM[1]='=';lireCar();}
+                else if (car_Cour =='>') {sym_Cour.CODE = DIFF_TOKEN;sym_Cour.NOM[1]='>';lireCar();}
                 else {sym_Cour.CODE = INF_TOKEN;}
                 break;
             case '>' :
                 lireCar();
-                if (car_Cour == '=') {sym_Cour.CODE = SUPEG_TOKEN;lireCar();}
+                if (car_Cour == '=') {sym_Cour.CODE = SUPEG_TOKEN;sym_Cour.NOM[1]='=';lireCar();}
                 else {sym_Cour.CODE = SUP_TOKEN;}
                 break;
             case ':' : // :
                 lireCar();
-                if (car_Cour == '=') {sym_Cour.CODE = AFF_TOKEN;lireCar();}
+                if (car_Cour == '=') {sym_Cour.CODE = AFF_TOKEN;sym_Cour.NOM[1]='=';lireCar();}
                 else {
-                    sym_Cour.CODE = ERREUR_TOKEN;
-                    Gen_Erreur(ERR_CAR_INC);
+                    sym_Cour.CODE = P_TOKEN;
                 }
                 break;
             case '{' :
@@ -381,7 +285,12 @@ void sym_Suiv(){
                 }
                 break;
             case '=' :
-                sym_Cour.CODE = EG_TOKEN; lireCar();break;
+                lireCar();
+                if (car_Cour == '>') {sym_Cour.CODE = IMP_TOKEN;sym_Cour.NOM[1]='>';lireCar();}
+                else {
+                    sym_Cour.CODE = EG_TOKEN;
+                }
+                break;
             default : // car inconnu
                 sym_Cour.CODE = ERREUR_TOKEN;
                 Gen_Erreur(ERR_CAR_INC);
@@ -406,13 +315,3 @@ void testSymbole (TOKENS cl, CODES_ERREURS err){
 
 
 
-int main(int argc, char const *argv[])
-{
-    fichier = fopen("test.txt","r");
-    lireCar();
-    while (car_Cour!=EOF) {
-        sym_Suiv();
-        afficherToken();
-        //cleanUp();
-    }
-}
