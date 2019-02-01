@@ -19,7 +19,7 @@ contract : eps | WITH_TOKEN modes
 
 modes : mode mode_aux 
 
-mode_aux : eps |V_TOKEN mode mode_aux
+mode_aux : eps | V_TOKEN mode mode_aux
 
 mode : spark_mode | global_mode | depends_mode | pre_mode | post_mode 
 
@@ -70,6 +70,15 @@ elseaux : eps | ELSE_TOKEN instructions
 condition : exp (EG_TOKEN | DIFF_TOKEN | INF_TOKEN | SUP_TOKEN | INFEG_TOKEN | SUPEG_TOKEN ) exp
 
 while_ins : WHILE_TOKEN condition LOOP_TOKEN instructions END_TOKEN LOOP_TOKEN 
+
+
+
+
+
+
+
+
+
 
 
 
