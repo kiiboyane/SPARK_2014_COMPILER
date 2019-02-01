@@ -29,7 +29,7 @@ void lireMot(){
     sym_Cour.NOM[0]=car_Cour;
     int i =1;
     lireCar();
-    while((car_Cour>='a' && car_Cour<='z')||(car_Cour>='A' && car_Cour<='Z')||(car_Cour>=48 && car_Cour<=57)){ // a-z A-Z 0-9
+    while((car_Cour>='a' && car_Cour<='z')||(car_Cour>='A' && car_Cour<='Z')||(car_Cour>=48 && car_Cour<=57) || car_Cour==95){ // a-z A-Z 0-9
         sym_Cour.NOM[i]=car_Cour;
         i++;
         lireCar();
@@ -158,7 +158,8 @@ void lireNombre(){
 void lireCommentaire(){
     if(car_Cour =='-'){
         lireCar();
-        while(car_Cour!=EOF && car_Cour!='\n'){
+        while(!feof(fichier) && car_Cour!='\n' && car_Cour!='\r'){
+            //printf("%c", car_Cour);
             lireCar();
         }
         sym_Cour.CODE = COMMENTAIRE_TOKEN;
@@ -183,7 +184,7 @@ void afficherToken(){
         case 1010 : printf("BEGIN_TOKEN"); break;
         case 1011 : printf("END_TOKEN "); break;
         case 1013 : printf("PV_TOKEN "); break;
-
+        case 1052 : printf("V_TOKEN "); break;
         case 1017 : printf("IS_TOKEN "); break;
         case 1018 : printf("CONSTANT_TOKEN "); break;
         case 1019 : printf("PLUS_TOKEN"); break;
@@ -222,6 +223,8 @@ void afficherToken(){
         case 1072 : printf("DIV_TOKEN"); break;
         case 1062 : printf("INFEG_TOKEN"); break;
         case 1063 : printf("SUPEG_TOKEN"); break;
+        case 1068 : printf("COMMENTAIRE_TOKEN"); break;
+        case 1074 : printf("AP_TOKEN"); break;
 
 
 
@@ -250,9 +253,10 @@ void sym_Suiv(){
         sym_Cour.NOM[0]=car_Cour;
         switch(car_Cour){
             case '+' : sym_Cour.CODE = PLUS_TOKEN; lireCar();break;//+
+            case '\'' : sym_Cour.CODE = AP_TOKEN; lireCar();break;// '\''
             case '*' : sym_Cour.CODE = MUL_TOKEN; lireCar();break;//*
             case ',' : sym_Cour.CODE = V_TOKEN;lireCar();break;//,
-            case '-' : sym_Cour.CODE = MOINS_TOKEN; lireCar();break;//-
+           // case '-' : sym_Cour.CODE = MOINS_TOKEN; lireCar();break;//-
             case '(' : sym_Cour.CODE = PO_TOKEN; lireCar();break;//(
             case ')' : sym_Cour.CODE = PF_TOKEN; lireCar();break;//)
             case '.' : sym_Cour.CODE = PT_TOKEN; lireCar();break;//.
@@ -276,12 +280,11 @@ void sym_Suiv(){
                     sym_Cour.CODE = P_TOKEN;
                 }
                 break;
-            case '{' :
+            case '-' :
                 lireCar();
-                if (car_Cour == '*'){lireCar();lireCommentaire();}
+                if (car_Cour == '-'){sym_Cour.CODE = COMMENTAIRE_TOKEN; lireCommentaire();}
                 else {
-                    sym_Cour.CODE = ERREUR_TOKEN;
-                    Gen_Erreur(ERR_CAR_INC);
+                    sym_Cour.CODE = MOINS_TOKEN;
                 }
                 break;
             case '=' :

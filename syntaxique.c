@@ -10,7 +10,7 @@ Erreurs MES_ERR[100]={{ERR_CAR_INC,"Caractère inconnu"},
                     {ERR_FICH_VID,"Fichier vide"},
                     {ERR_ID_LONG, "Identifiant très long" },
                     {ERR_COMM,"Commentaire non correct"},
-                    {ERR_AFFEC,"AFFEC"},{ERR_COND,"COND"},
+                    {ERR_AFFEC," \":=\" expected "},{ERR_COND,"COND"},
                     {ERR_CONSTS,"CONSTS"},
                     {ERR_ECRIRE,"ECRIRE"},
                     {ERR_FACT,"FACT"},
@@ -35,7 +35,11 @@ Erreurs MES_ERR[100]={{ERR_CAR_INC,"Caractère inconnu"},
                     {MODE_ERR," mode not found "},
                     {ERR_IMP," \"=>\" not found "},
                     {SPARK_MODE_ERR," on/off expected  "},
-                    {ERR_NULL," null expected  "}
+                    {ERR_NULL," null expected  "}  ,                
+                    {DEC_ERR," missing operand  "} ,
+                    {ERR_CHARACTER,"  missing operand "} ,
+                    {ERR_AP,"  \' expected "} 
+
                   };
 
 
@@ -60,8 +64,14 @@ void pre_mode ();
 void post_mode (); 
 void declarations (); 
 void procedure_body ();
-void condition() ; 
-
+void condition() ;
+void numorid(); 
+void var_declaration(); 
+void declarations() ; 
+void declaration(); 
+void constant(); 
+void charorid(); 
+void var_declaration_aff();
 
 /*void args_dec_aux ();
 void arg_dec ();
@@ -93,10 +103,12 @@ void while_ins (); */
 
 
 void Symbole_testing  (TOKENS cl, CODES_ERREURS err){
+
   if (sym_Cour.CODE == cl)
-  {
+  { 
     afficherToken();
     sym_Suiv();
+
   }
   else
     Gen_Erreur(err);
@@ -118,7 +130,6 @@ void args(){
 }
 
 void args_dec(){
-  printf("in args_dec \n");
   arg_dec(); 
   arg_dec_aux();
 }
@@ -160,7 +171,7 @@ void out(){
                   break; 
        }
 }
-void type (){
+void type(){
   switch(sym_Cour.CODE){
         case NATURAL_TOKEN :
                   sym_Suiv();
@@ -172,6 +183,23 @@ void type (){
                   sym_Suiv();
                   break; 
         case CHARACTER_TOKEN :
+                  sym_Suiv();
+                  break;  
+        default : 
+                  Gen_Erreur(TYPE_ERR);
+                  break; 
+       }
+
+}
+void typewoc (){
+    switch(sym_Cour.CODE){
+        case NATURAL_TOKEN :
+                  sym_Suiv();
+                  break; 
+        case INTEGER_TOKEN :
+                  sym_Suiv();
+                  break; 
+        case POSITIVE_TOKEN :
                   sym_Suiv();
                   break;  
         default : 
@@ -232,7 +260,6 @@ void mode (){
 
 void spark_mode(){
     Symbole_testing(IMP_TOKEN,ERR_IMP);
-    sym_Suiv();
     switch(sym_Cour.CODE){
         case ON_TOKEN :
                   sym_Suiv();
@@ -280,33 +307,95 @@ void mode_aux(){
        }
 
 }
-/*void contract(){
-  switch(sym_Cour.CODE){
-        case WITH_TOKEN :
-                  modes();
-                  break; 
-       }
-}*/
-/*void modes (){
-  printf("in modes \n");
-  sym_Suiv();
-  if(sym_Cour.CODE !=  MODE_SPARK_TOKEN ) return ; 
-}
+
 void declarations (){
-   printf("in declarations");
+  switch(sym_Cour.CODE){
+        case BEGIN_TOKEN :
+                  break; 
+        default : 
+                declaration(); 
+                declarations(); 
+                break; 
+       }
 
-}*/
-/*void procedure_body(){
+}
+void declaration(){
+  switch(sym_Cour.CODE){
+     case ID_TOKEN :
+                  var_declaration();
+                  Symbole_testing(PV_TOKEN,ERR_PV);
+                  break;
+     case PROCEDURE_TOKEN :
+                  procedure() ;
+                  break; 
+      default :   break; 
+       }
 
-}*/
+}
+
+void var_declaration(){
+    Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
+    Symbole_testing(P_TOKEN,ERR_P);
+    constant();
+    var_declaration_aff(); 
+}
+void var_declaration_aff(){
+   switch(sym_Cour.CODE){
+     case CHARACTER_TOKEN :
+                sym_Suiv();
+                Symbole_testing(AFF_TOKEN,ERR_AFFEC);
+                charorid();
+                break;
+      default :  
+              typewoc(); 
+              Symbole_testing(AFF_TOKEN,ERR_AFFEC);
+              numorid();
+              sym_Suiv();
+              break; 
+       }
+}
+void charorid(){
+    switch(sym_Cour.CODE){
+     case ID_TOKEN :
+                 sym_Suiv();
+                  break;
+      case AP_TOKEN :
+                  sym_Suiv();
+                  numorid();
+                  sym_Suiv();
+                  Symbole_testing(AP_TOKEN,ERR_AP);
+                  break;
+      default :  Gen_Erreur(DEC_ERR);
+              break; 
+       }
+}
+void constant(){
+   switch(sym_Cour.CODE){
+     case CONSTANT_TOKEN :
+                  sym_Suiv();
+                  break;
+      default :   break; 
+       }
+}
+
+void numorid (){
+     switch(sym_Cour.CODE){
+     case NUM_TOKEN :
+                  break;
+      case ID_TOKEN :
+                  break;
+      default :  Gen_Erreur(DEC_ERR);
+              break; 
+       }
+}
+
 
 void procedure(){
     Symbole_testing(PROCEDURE_TOKEN,ERR_PROCEDURE);
     Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
     args(); 
-   // modes(); 
     Symbole_testing(IS_TOKEN,ERR_IS);
-    //declarations(); 
+    declarations(); 
     Symbole_testing(BEGIN_TOKEN,ERR_BEGIN);
    // procedure_body();
     Symbole_testing(END_TOKEN,ERR_END);
@@ -342,7 +431,7 @@ int main(int argc, char const *argv[])
   first_sym();
   procedure();
   printf(" success \n");
-  /*lireCar();
+  /* lireCar();
   while (car_Cour!=EOF) {
       sym_Suiv();
       afficherToken();

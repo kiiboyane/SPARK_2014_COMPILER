@@ -1,7 +1,7 @@
 
 procedure :  PROCEDURE_TOKEN ID_TOKEN args contract  IS_TOKEN declarations  BEGIN_TOKEN procedure_body END_TOKEN ID_TOKEN PV_TOKEN
 
-args :  eps | PO_TOKEN args_dec PF_TOKEN 
+args_dec :  eps | PO_TOKEN args_dec PF_TOKEN 
 
 args_dec : arg_dec arg_dec_aux
 
@@ -41,7 +41,8 @@ declarations : eps | declaration PV_TOKEN declarations
 
 declaration :   var_declaration | procedure 
 
-var_declaration : ID_TOKEN P_TOKEN (CONSTANT_TOKEN)? type  AFF_TOKEN (NUM_TOKEN | ID_TOKEN) 
+var_declaration : ID_TOKEN P_TOKEN (CONSTANT_TOKEN)? (typewoc  AFF_TOKEN (NUM_TOKEN | ID_TOKEN) |
+                  CHARACTER_TOKEN AFF_TOKEN (PO_TOKEN ID_TOKEN PF_TOKEN | ID_TOKEN))
 
 procedure_body : instructions 
 
