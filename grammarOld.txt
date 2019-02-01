@@ -1,0 +1,72 @@
+#include "parserSpark.h"
+#include<stdlib.h>
+#include<stdio.h>
+
+
+extern int yylex();  //yylex ne sera reconnu que lors de l édition de lien scanner parser 
+
+boolean follow_token= false; 
+typetoken token;
+
+
+typetoken _lire_token(){
+    if(follow_token == true){
+        follow_token=false;
+    }
+    else{
+	do 
+	    {token = (typetoken)yylex();}
+	while (token == COMMENTAIRE); 
+    }   
+    return token; 
+} 
+
+
+//Grammaire de Spark 
+/* 
+PROG : FONCTION | PROCEDURE ; 
+PROCEDURE : procedure idf LIST_PAR 'is' LISTE_DECL 'begin' LISTE_INST 'end' idf ';'
+FONCTION : function idf LIST_PAR RETOUR TYPES 'is' LISTE_DECL 'begin' LISTE_INSTF 'end' idf ';'
+
+LIST_PAR : epsilon | '(' PAR LIST_PAR_AUX ')'
+LIST_PAR_AUX : epsilon| ';' PAR 
+PAR : LIST_IDF ':' type LIST_PAR_AUX
+LIST_IDF : idf LIST_IDF_AUX
+LIST_IDF_AUX: epsilon | ',' LIST_IDF
+LISTE_DECL : DECL LISTE_DECLAUX 
+LISTE_DECLAUX : LISTE_DECL | epsilon
+DECL: LIST_IDF ':' type  DECL_AUX
+DECL_AUX : ':=' idf ';' |':=' CONST ';' | ';'
+CONST : inumber | dnumber | true | false 
+TYPES : INTEGER | BOOLEAN | NATURAL | CHARACTER | FLOAT | STRUCTURE 
+STRUCTURE: 'type' idf 'is' 'record' LIST_DECL 'end' 'record'
+COMP : EQ | GreaterOrEqual | LessOrEqual | LESS | GREATER | NOTEQ
+CONDITION : idf COMP const | idf COMP idf | idf COMP ADDSUB | ADDSUB COMP const |  ADDSUB COMP ADDSUB | ADDSUB COMP idf | const COMP const | const COMP idf  | const COMP ADDSUB 
+IF_INSTAUX : 'end' 'if' ';' | ELSE LISTE_INST 'end' 'if' ';' 
+ADDSUB : MULTDIV ADDSUBAUX
+ADDSUBAUX : – MULTDIV ADDSUBAUX | + MULTDIV ADDSUBAUX | epsilon
+MULTDIV : AUX MULTDIVAUX
+MULTDIVAUX : * AUX MULTDIVAUX | / AUX MULTDIVAUX | epsilon
+AUX : idf | inumber | dnumber | ( ADDSUB )
+CASEBODY: 'when' 'others' AFFECT LIST_INST | 'when' inumber AFFECT LIST_INST CASEBODY
+
+LIST_INST : INST LIST_INST_AUX 
+LISTE_INSTF : INSTF LIST_INST_AUX 
+INSTF : INST | RETOUR idf ';' //un retour doit figurer dans le code, à voir pour la grammaire, sinon une var qui sincremente et condition dans func 
+LIST_INST_AUX : LIST_INST | epsilon 
+INST: epsilon | idf ':=' CONST | idf ':=' idf | idf ':=' 'true' | idf ':=' 'false' | idf = ':=' ADDSUB | //affectation 
+			  IF CONDITION THEN LIST_INST IF_INST_AUX | //if
+			  'for' idf 'in' inumber '..' inumber 'loop' LIST_INST 'end' 'loop' ';' | 
+			  'for' idf 'in' idf "'Range" 'loop' LIST_INST 'end' 'loop' | 
+			  'loop' LIST_INST 'exit' 'when' CONDITION 'end' 'loop' ';' |   
+			  'while' CONDITION 'loop' LIST_INST 'end' 'loop' ';' |
+			  'case' idf CASEBODY 'end' 'case' ';'
+
+
+
+
+
+
+
+
+
