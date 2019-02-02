@@ -41,7 +41,9 @@ declarations : eps | declaration PV_TOKEN declarations
 
 declaration :   var_declaration | procedure 
 
-var_declaration : ID_TOKEN P_TOKEN (CONSTANT_TOKEN)? (typewoc  AFF_TOKEN (NUM_TOKEN | ID_TOKEN) |
+var_declaration : ID_TOKEN P_TOKEN (CONSTANT_TOKEN)? var_declaration_aff 
+
+var_declaration_aff : (typewoc  AFF_TOKEN (NUM_TOKEN | ID_TOKEN) |
                   CHARACTER_TOKEN AFF_TOKEN (PO_TOKEN ID_TOKEN PF_TOKEN | ID_TOKEN))
 
 procedure_body : instructions 
@@ -52,9 +54,9 @@ instruction_aux : eps | instruction PV_TOKEN instructions
 
 instruction : NULL_TOKEN   | for_ins | if_ins | while_ins | aff_ins | proc_aff 
 
-for_ins : FOR_TOKEN ID_TOKEN IN_TOKEN (REVERSE_TOKEN)? range LOOP_TOKEN instructions END_TOKEN LOOP_TOKEN
+for_ins : FOR_TOKEN ID_TOKEN IN_TOKEN  range LOOP_TOKEN instructions END_TOKEN LOOP_TOKEN
 
-range :  (NUM_TOKEN|ID_TOKEN) PT_TOKEN PT_TOKEN (NUM_TOKEN|ID_TOKENg 
+range :  (NUM_TOKEN|ID_TOKEN) PT_TOKEN PT_TOKEN (NUM_TOKEN|ID_TOKEN)
 
 aff_ins : ID_TOKEN AFF_TOKEN exp 
 
@@ -66,9 +68,12 @@ term : fact factaux
 
 factaux :eps | (*|/) fact factaux 
 
-fact : NUM_TOKEN | ID_TOKEN | exp 
+fact : NUM_TOKEN | ID_TOKEN 
 
-if_ins : IF_TOKEN condition THEN_TOKEN instructions elseaux END_TOKEN IF_TOKEN 
+
+
+
+if_ins : IF_TOKEN condition THEN_TOKEN instructions END_TOKEN IF_TOKEN 
 
 elseaux : eps | ELSE_TOKEN instructions 
 

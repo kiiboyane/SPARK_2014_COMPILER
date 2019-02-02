@@ -38,8 +38,14 @@ Erreurs MES_ERR[100]={{ERR_CAR_INC,"Caractère inconnu"},
                     {ERR_NULL," null expected  "}  ,                
                     {DEC_ERR," missing operand  "} ,
                     {ERR_CHARACTER,"  missing operand "} ,
-                    {ERR_AP,"  \' expected "} 
-
+                    {ERR_AP,"  \" \'\" expected "} ,
+                    {INSTRUCTION_ERR,"  statement expected "} ,
+                    {ERR_IN,"  'in' expected "} ,
+                    {ERR_LOOP," 'loop' expected "} ,
+                    {ERR_PT," '.' expected "} ,
+                    {ERR_THEN," 'then' expected "} ,
+                    {ERR_IF," 'if' expected "} ,
+                    {CONDITION_ERR," condition error  "} 
                   };
 
 
@@ -72,34 +78,18 @@ void declaration();
 void constant(); 
 void charorid(); 
 void var_declaration_aff();
-
-/*void args_dec_aux ();
-void arg_dec ();
-void id_tokens (); 
-void id_tokens_aux ();
-void type (); 
-void contract (); 
-
-
-void declaration (); 
-void var_declaration (); 
-void instructions (); 
-void instruction_aux (); 
-void instruction (); 
-void aff_ins (); 
-void for_ins (); 
-void range (); 
-void exp (); 
-void termaux (); 
-void term (); 
-void factaux (); 
-void fact (); 
-void if_ins (); 
-void elseaux (); 
-void condition (); 
-void while_ins (); */
-
-
+void expr(); 
+void while_ins(); 
+void procedure_body();
+void instruction(); 
+void instructions_aux(); 
+void instructions ();
+void range(); 
+void if_ins(); 
+void for_ins(); 
+void symbole_con(); 
+void fact(); 
+void term(); 
 
 
 void Symbole_testing  (TOKENS cl, CODES_ERREURS err){
@@ -258,6 +248,23 @@ void mode (){
        }
 }
 
+void while_ins (){
+     sym_Suiv();
+     condition();
+     Symbole_testing(LOOP_TOKEN,ERR_LOOP);
+     instructions() ; 
+     Symbole_testing(END_TOKEN,ERR_END);
+     Symbole_testing(LOOP_TOKEN,ERR_LOOP);
+
+
+}
+
+void aff_ins(){
+     Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
+     Symbole_testing(AFF_TOKEN,ERR_AFFEC);
+     expr();
+}
+
 void spark_mode(){
     Symbole_testing(IMP_TOKEN,ERR_IMP);
     switch(sym_Cour.CODE){
@@ -290,7 +297,57 @@ void pre_mode(){
     condition();
 }
 void condition (){
-    Symbole_testing(NULL_TOKEN,ERR_NULL);
+    expr() ; 
+    symbole_con(); 
+    sym_Suiv();
+    expr();
+}
+
+void expr(){
+    term();
+    while(sym_Cour.CODE == PLUS_TOKEN || sym_Cour.CODE == MOINS_TOKEN){
+        sym_Suiv();
+        term();
+    }
+}
+
+void term(){
+    fact();
+    while(sym_Cour.CODE == MUL_TOKEN || sym_Cour.CODE == DIV_TOKEN){
+        sym_Suiv();
+        fact();
+    }
+}
+
+void fact(){
+    switch(sym_Cour.CODE){
+        case ID_TOKEN :
+                       sym_Suiv(); break;
+        case NUM_TOKEN : sym_Suiv(); break;
+        case PO_TOKEN : sym_Suiv();
+                        expr();
+                        Symbole_testing(PF_TOKEN,ERR_PF);
+                        break;
+        default : Gen_Erreur(ERR_FACT);
+    }
+}
+void symbole_con(){
+   switch(sym_Cour.CODE){
+        case EG_TOKEN :
+                  break; 
+        case DIFF_TOKEN :
+                  break; 
+        case INF_TOKEN :
+                  break; 
+        case SUP_TOKEN :
+                  break; 
+        case INFEG_TOKEN :
+                  break; 
+        case SUPEG_TOKEN :
+                  break; 
+        default :Gen_Erreur(CONDITION_ERR);
+                break; 
+       }
 }
 void post_mode(){
     Symbole_testing(IMP_TOKEN,ERR_IMP);
@@ -389,6 +446,86 @@ void numorid (){
        }
 }
 
+void procedure_body(){
+  instructions(); 
+}
+
+void  instructions(){
+    instruction (); 
+    instructions_aux();
+}
+
+void instruction(){
+  switch(sym_Cour.CODE){
+    case NULL_TOKEN :
+                  sym_Suiv() ;
+                  Symbole_testing(PV_TOKEN,ERR_PV);
+                  break;
+    case FOR_TOKEN :
+                  for_ins(); 
+                  Symbole_testing(PV_TOKEN,ERR_PV);
+                  break;
+    case IF_TOKEN :
+                  if_ins(); 
+                  Symbole_testing(PV_TOKEN,ERR_PV);
+                  break;
+    case WHILE_TOKEN :
+                  while_ins();
+                  Symbole_testing(PV_TOKEN,ERR_PV);
+                  break;
+    case ID_TOKEN :
+                  aff_ins(); 
+                  Symbole_testing(PV_TOKEN,ERR_PV);
+                  break;
+    case PROCEDURE_TOKEN :
+                 procedure(); 
+                  break;
+    default :  Gen_Erreur(INSTRUCTION_ERR);
+              break; 
+       }
+
+}
+
+
+void instructions_aux (){
+     switch(sym_Cour.CODE){
+            case END_TOKEN :
+                          break;
+            default : instruction(); 
+                     break; 
+       }   
+     
+}
+void for_ins(){
+    sym_Suiv() ;
+    Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
+    Symbole_testing(IN_TOKEN,ERR_IN);
+    range(); 
+    Symbole_testing(LOOP_TOKEN,ERR_LOOP);
+    instructions(); 
+    Symbole_testing(END_TOKEN,ERR_END);
+    Symbole_testing(LOOP_TOKEN,ERR_LOOP);
+}
+void range (){
+    numorid(); 
+    sym_Suiv();
+    Symbole_testing(PT_TOKEN,ERR_PT);
+    Symbole_testing(PT_TOKEN,ERR_PT);
+    numorid(); 
+    sym_Suiv();
+}
+
+void if_ins(){
+    sym_Suiv() ;
+    condition(); 
+    Symbole_testing(THEN_TOKEN,ERR_THEN);
+    instructions();
+    // elseaux();
+    Symbole_testing(END_TOKEN,ERR_END);
+    Symbole_testing(IF_TOKEN,ERR_IF);
+
+}
+
 
 void procedure(){
     Symbole_testing(PROCEDURE_TOKEN,ERR_PROCEDURE);
@@ -397,7 +534,7 @@ void procedure(){
     Symbole_testing(IS_TOKEN,ERR_IS);
     declarations(); 
     Symbole_testing(BEGIN_TOKEN,ERR_BEGIN);
-   // procedure_body();
+    procedure_body();
     Symbole_testing(END_TOKEN,ERR_END);
     Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
     Symbole_testing(PV_TOKEN,ERR_PV);
@@ -411,8 +548,10 @@ void procedure(){
 
 
 
-void first_sym(){
-    lireCar();
+void first_sym(){ 
+
+    lireCar(); 
+
     sym_Suiv();
 }
 
@@ -427,6 +566,7 @@ int main(int argc, char const *argv[])
     }
     else printf("PAS BRAVO : fin de programme erronee !!!!");
 */
+
   fichier = fopen("test.txt","r");
   first_sym();
   procedure();

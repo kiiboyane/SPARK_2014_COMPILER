@@ -236,6 +236,7 @@ void afficherToken(){
 
 void sym_Suiv(){
     //cleanUp();
+
     while(car_Cour == 32 || car_Cour==9 || car_Cour == 10 || car_Cour == 13){ // espace tabulation retour chariot
         lireCar();
     }

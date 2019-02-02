@@ -4,23 +4,10 @@ with
   Spark_mode => Off , 
   Global => null
 is 
---dfkdlk
- k : constant Character   :=  'a';
- T : constant Natural := 5  ;
- procedure Increment
-(X : in out Integer ;X : in out Integer;X : in out Integer)
-with
-  Spark_mode => Off , 
-  Global => null
-is 
---ffjfj
- k : constant Character   :=  'a';
  T : constant Natural := 5  ; 
  D : Integer := 6  ; 
+ toleed :   Character  :=  '6';
 
 begin
-end Increment; 
- D : Integer := 6  ; 
-
-begin
+ null;
 end Increment;
