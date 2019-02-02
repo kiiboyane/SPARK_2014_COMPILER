@@ -2,12 +2,16 @@ procedure Show_Illegal_SPARK_Code is
 
    G : Integer := 0;
 
-   procedure is
+   procedure F is
       Tmp : constant Integer := G;
    begin
       G := G + 1;
    end F;
 
+
 begin
+   for I in 1 ..5 loop
+     null ;
+   end loop;
    G := F - F; 
 end Show_Illegal_SPARK_Code;

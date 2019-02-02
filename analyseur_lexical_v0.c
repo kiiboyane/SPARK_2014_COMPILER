@@ -29,12 +29,12 @@ void lireMot(){
     sym_Cour.NOM[0]=car_Cour;
     int i =1;
     lireCar();
-    while((car_Cour>='a' && car_Cour<='z')||(car_Cour>='A' && car_Cour<='Z')||(car_Cour>=48 && car_Cour<=57) || car_Cour==95){ // a-z A-Z 0-9
+    while((car_Cour>='a' && car_Cour<='z')||(car_Cour>='A' && car_Cour<='Z')||(car_Cour>=48 && car_Cour<=57) || car_Cour==95){ // a-z A-Z 0-9  _
         sym_Cour.NOM[i]=car_Cour;
         i++;
         lireCar();
     }
-    if(strlen(sym_Cour.NOM)>20){
+    if(strlen(sym_Cour.NOM)>40){
         sym_Cour.CODE = ERREUR_TOKEN;
         Gen_Erreur(ERR_ID_LONG);
     }
@@ -104,6 +104,9 @@ void lireMot(){
     }
      else if (strcmpi(sym_Cour.NOM,"natural")==0){
         sym_Cour.CODE = NATURAL_TOKEN;
+    }
+     else if (strcmpi(sym_Cour.NOM,"for")==0){
+        sym_Cour.CODE = FOR_TOKEN;
     }
      else if (strcmpi(sym_Cour.NOM,"and")==0){
         sym_Cour.CODE = AND_TOKEN;

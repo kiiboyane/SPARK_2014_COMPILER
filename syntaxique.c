@@ -560,17 +560,17 @@ int main(int argc, char const *argv[])
     }
     else printf("PAS BRAVO : fin de programme erronee !!!!");
 */
-/*
+
   fichier = fopen("test.txt","r");
   first_sym();
   procedure();
-  printf(" success \n");*/
-   lireCar();
+  printf(" success \n");
+  /* lireCar();
   while (car_Cour!=EOF) {
       sym_Suiv();
-      afficherToken();
+      afficherToken();*/
       //cleanUp();
-  }
+  //}
 
 	return 1;
 }
