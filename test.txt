@@ -10,8 +10,22 @@ procedure Show_Illegal_SPARK_Code is
 
 
 begin
-   for I in 1 ..5 loop
+   
+    while I*A = 5+58 loop
+      null; 
+       while I <= 5 loop
+      null; 
+                     for I in 1 ..5 loop
+     G := G + 1;
+     null;
+     for I in 1 ..5 loop
      null ;
+     G := G + 1;
+
+     end loop;
    end loop;
-   G := F - F; 
+	      I := I + 1;
+	   end loop;
+      I := I + 1;
+   end loop;
 end Show_Illegal_SPARK_Code;

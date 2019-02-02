@@ -78,6 +78,7 @@ void procedure_body();
 void instruction(); 
 void instructions_aux(); 
 void instructions ();
+void procedure_aff ();
 void range(); 
 void if_ins(); 
 void for_ins(); 
@@ -471,9 +472,9 @@ void instruction(){
                   aff_ins(); 
                   Symbole_testing(PV_TOKEN,ERR_PV);
                   break;
-    case PROCEDURE_TOKEN :
+  /*  case PROCEDURE_TOKEN :
                  procedure_aff(); 
-                  break;
+                  break;*/
     default :  Gen_Erreur(INSTRUCTION_ERR);
               break; 
        }
@@ -481,22 +482,22 @@ void instruction(){
 }
 
 
-void procedure_aff (){
+/*void procedure_aff (){
       Symbole_testing(PO_TOKEN,ERR_PO);
       if(sym_Cour.CODE == ID_TOKEN){
         sym_Suiv(); 
          while(sym_Cour.CODE == V_TOKEN) {
-                Symbole_testing(ID_TOKEN,ERR_ID);  
+                Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);  
             }
       }
       Symbole_testing(PF_TOKEN,ERR_PF);
-}
+}*/
 
 void instructions_aux (){
      switch(sym_Cour.CODE){
             case END_TOKEN :
                           break;
-            default : instruction(); 
+            default : instructions(); 
                      break; 
        }   
      
