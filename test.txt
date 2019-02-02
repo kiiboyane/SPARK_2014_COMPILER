@@ -1,13 +1,13 @@
-procedure Increment
-(X : in out Integer ;X : in out Integer;X : in out Integer)
-with
-  Spark_mode => Off , 
-  Global => null
-is 
- T : constant Natural := 5  ; 
- D : Integer := 6  ; 
- toleed :   Character  :=  '6';
+procedure Show_Illegal_SPARK_Code is
+
+   G : Integer := 0;
+
+   procedure is
+      Tmp : constant Integer := G;
+   begin
+      G := G + 1;
+   end F;
 
 begin
- null;
-end Increment;
+   G := F - F; 
+end Show_Illegal_SPARK_Code;

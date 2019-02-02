@@ -38,7 +38,8 @@ Erreurs MES_ERR[100]={{ERR_CAR_INC,"Caractère inconnu"},
                     {ERR_PT," '.' expected "} ,
                     {ERR_THEN," 'then' expected "} ,
                     {ERR_IF," 'if' expected "} ,
-                    {CONDITION_ERR," condition error  "} 
+                    {CONDITION_ERR," condition error  "}, 
+                    {ERR_FACT," erreur dans l'expression "}, 
                   };
 
 
@@ -559,17 +560,17 @@ int main(int argc, char const *argv[])
     }
     else printf("PAS BRAVO : fin de programme erronee !!!!");
 */
-
+/*
   fichier = fopen("test.txt","r");
   first_sym();
   procedure();
-  printf(" success \n");
-  /* lireCar();
+  printf(" success \n");*/
+   lireCar();
   while (car_Cour!=EOF) {
       sym_Suiv();
       afficherToken();
       //cleanUp();
-  }*/
+  }
 
 	return 1;
 }
