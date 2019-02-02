@@ -472,7 +472,7 @@ void instruction(){
                   Symbole_testing(PV_TOKEN,ERR_PV);
                   break;
     case PROCEDURE_TOKEN :
-                 procedure(); 
+                 procedure_aff(); 
                   break;
     default :  Gen_Erreur(INSTRUCTION_ERR);
               break; 
@@ -480,6 +480,17 @@ void instruction(){
 
 }
 
+
+void procedure_aff (){
+      Symbole_testing(PO_TOKEN,ERR_PO);
+      if(sym_Cour.CODE == ID_TOKEN){
+        sym_Suiv(); 
+         while(sym_Cour.CODE == V_TOKEN) {
+                Symbole_testing(ID_TOKEN,ERR_ID);  
+            }
+      }
+      Symbole_testing(PF_TOKEN,ERR_PF);
+}
 
 void instructions_aux (){
      switch(sym_Cour.CODE){
