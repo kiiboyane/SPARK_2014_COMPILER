@@ -38,6 +38,13 @@ Erreurs MES_ERR[100]={{ERR_CAR_INC,"Caractère inconnu"},
                     {ERR_FACT," erreur dans l'expression "}, 
                     {PROCEDURE_NAME_ERR," the procedure\'s name already taken "}, 
                     {PROCEDURE_NAME_ERR," mispelling of the procedure\'s name "}, 
+                    {VARIABLE_NAME_ERR," the variable\'s name already taken "}, 
+                    {CHARACTER_ERR," expected one letter "}, 
+                    {VARIABLE_NOT_FOUND_ERR," variable not found "}, 
+                    {NOT_INITIALIZED_ERR," variable not initialized"}, 
+                    {TYPE_DIFFERENT_ERR," different types"}, 
+                    {CONSTANT_ERR," you can't change a constant "}, 
+                    {PROCEDURE_AFF_ERR," you can't affect a value to procedure "}, 
                   };
 
 
@@ -47,14 +54,18 @@ typedef enum  identity{
     PROCEDURE , VARIABLE , ARGUMENT  
     
 }identity;
+typedef enum  type_var{
+    NATURAL , POSITIVE , INTEGER , CHARACTER   , PROCEDURE_T
+    
+}type_var;
 
 struct id {
   char* content;
-  char * type ; 
+  type_var type ; 
   char * value ; 
   identity where  ; 
   bool constant ;   
-};
+} id;
 
 struct id ids[1000];
 
@@ -66,6 +77,8 @@ void addID( char * new_id ,identity place ){
   strcpy(ids[idx].content,new_id);
   ids[idx].constant = false;  
   ids[idx].where = place;  
+  if(place == PROCEDURE) ids[idx].type = PROCEDURE_T  , ids[idx].value = "PROCEDURE" ;  
+  printf(" copying new_id : %s in idx %i\n",ids[idx].content, idx );
 }
 
 void addprocedure ( char * procedure_name){
@@ -79,6 +92,27 @@ bool findID( char *  new_id){
    for(int i=0 ; i<=idx ; i++)
          t= t || (strcmpi(new_id , ids[idx].content)==0? true : false) ; 
     return t; 
+}
+
+
+int findIDindexb(char *  new_id){
+   for(int i=0 ; i<=idx ; i++){
+       printf(" ids %s \n" ,ids[i].content );
+       printf(" new_id %s \n" ,new_id );
+       printf("  i = %d \n"  , i );
+       if (strcmpi(new_id , ids[i].content)==0 ) return i  ; 
+   }
+   return -1; 
+}
+
+int findIDindex(char *  new_id){
+   for(int i=0 ; i<idx ; i++){
+       printf(" ids %s \n" ,ids[i].content );
+       printf(" new_id %s \n" ,new_id );
+       printf("  i = %d \n"  , i );
+       if (strcmpi(new_id , ids[i].content)==0 ) return i  ; 
+   }
+   return -1; 
 }
 
 void removelastprocedure(char * chaine ){
@@ -114,14 +148,64 @@ char * find_sub_procedure (){
    return subbuff;
 }
 
-char * find_parent_procedure(){
 
+char * pathVariable(){
+    char * current  = (char * )malloc(strlen(find_current_procedure())+1);
+    strcpy(current ,find_current_procedure() );
+    if(strcmp(current , "")!=0) {
+      strcat(current , ".");
+    }else current[0]='\0';
+    char *c ; 
+    c =(char * ) malloc( strlen(current) + strlen(sym_Cour.NOM)+2);
+    c[0]='\0';
+    strcat(c , (const char * )current);
+    strcat(c , (const char * )sym_Cour.NOM);
+    current =(char * ) malloc(strlen(c)+1);
+    strcpy(current , c ) ;
+    return current; 
+}
+char *  checkProcedureName (){
+    char * current  = (char * )malloc(strlen(pathVariable())+1);
+    strcpy(current ,pathVariable() );
+    if(findID(current))  Gen_Erreur(PROCEDURE_NAME_ERR);
+    addID(current , PROCEDURE);
+    addprocedure(current);
+    return current  ; 
+}
+
+char *  checkVariableName (){
+    char * current  = (char * )malloc(strlen(pathVariable())+1);
+    strcpy(current ,pathVariable() );
+    if(findID(current))  Gen_Erreur(VARIABLE_NAME_ERR);
+    printf("current in check %s" , current ); 
+    addID(current , VARIABLE);
+    return current  ; 
 }
 
 
-
+int   returnid (){
+    char * current  = (char * )malloc(strlen(pathVariable())+1);
+    strcpy(current ,pathVariable() );
+    printf("   id of g %s \n " , current );
+    int  index  = findIDindex(current) ; 
+    printf("%d \n", index);
+    if(index==-1)  Gen_Erreur(VARIABLE_NOT_FOUND_ERR);
+    return index ; 
+}
+int   returnidb (){
+    char * current  = (char * )malloc(strlen(pathVariable())+1);
+    strcpy(current ,pathVariable() );
+    printf("   id of g %s \n " , current );
+    int  index  = findIDindexb(current) ; 
+    printf("%d \n", index);
+    if(index==-1)  Gen_Erreur(VARIABLE_NOT_FOUND_ERR);
+    return index ; 
+}
 /*semantique part */
 
+
+
+void charoridcharacter();
 /*void program () ; */
 void procedure () ; 
 void args () ; 
@@ -144,6 +228,8 @@ void declarations ();
 void procedure_body ();
 void condition() ;
 void numorid(); 
+void numoridwc(); 
+void numoridcharacter(); 
 void var_declaration(); 
 void declaration(); 
 void constant(); 
@@ -262,12 +348,15 @@ void type(){
 void typewoc (){
     switch(sym_Cour.CODE){
         case NATURAL_TOKEN :
+                  ids[idx].type = NATURAL; 
                   sym_Suiv();
                   break; 
         case INTEGER_TOKEN :
+                  ids[idx].type = INTEGER; 
                   sym_Suiv();
                   break; 
         case POSITIVE_TOKEN :
+                  ids[idx].type = POSITIVE; 
                   sym_Suiv();
                   break;  
         default : 
@@ -338,6 +427,10 @@ void while_ins (){
 }
 
 void aff_ins(){
+     int d= returnidb();
+     if(d==-1) Gen_Erreur(VARIABLE_NOT_FOUND_ERR);
+     if(ids[d].constant) Gen_Erreur(CONSTANT_ERR);
+     if(ids[d].type == PROCEDURE_T) Gen_Erreur(PROCEDURE_AFF_ERR);
      Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
      printf(" i am in aff \n" );
      Symbole_testing(AFF_TOKEN,ERR_AFFEC);
@@ -470,6 +563,7 @@ void declaration(){
 }
 
 void var_declaration(){
+    checkVariableName();
     Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
     Symbole_testing(P_TOKEN,ERR_P);
     constant();
@@ -478,26 +572,37 @@ void var_declaration(){
 void var_declaration_aff(){
    switch(sym_Cour.CODE){
      case CHARACTER_TOKEN :
+                ids[idx].type = CHARACTER; 
                 sym_Suiv();
                 Symbole_testing(AFF_TOKEN,ERR_AFFEC);
-                charorid();
+                charoridcharacter();
                 break;
       default :  
               typewoc(); 
               Symbole_testing(AFF_TOKEN,ERR_AFFEC);
-              numorid();
+              numoridwc();
               sym_Suiv();
               break; 
        }
 }
-void charorid(){
+void charoridcharacter(){
+    int t = 0;
     switch(sym_Cour.CODE){
      case ID_TOKEN :
+                 t= returnid() ;
+                  if(strcmp(ids[t].value , "\0")==0)Gen_Erreur(NOT_INITIALIZED_ERR);
+                 ids[idx].value = malloc(strlen(ids[t].value)+1); 
+                 strcpy(ids[idx].value , ids[t].value); 
+                 if(ids[idx].type != ids[t].type) Gen_Erreur(TYPE_DIFFERENT_ERR);
                  sym_Suiv();
-                  break;
+                 break;
       case AP_TOKEN :
                   sym_Suiv();
-                  numorid();
+                  if(strlen(sym_Cour.NOM)>1) Gen_Erreur(CHARACTER_ERR);
+                  ids[idx].value  = malloc(strlen( sym_Cour.NOM));
+                  strcpy(ids[idx].value , sym_Cour.NOM); 
+                  printf("value of this  is %s \n"   , ids[idx].value) ;
+                  numoridcharacter();
                   sym_Suiv();
                   Symbole_testing(AP_TOKEN,ERR_AP);
                   break;
@@ -508,15 +613,52 @@ void charorid(){
 void constant(){
    switch(sym_Cour.CODE){
      case CONSTANT_TOKEN :
+                  ids[idx].constant = true; 
                   sym_Suiv();
                   break;
       default :   break; 
+       }
+}
+void numoridcharacter(){
+  switch(sym_Cour.CODE){
+     case NUM_TOKEN :
+                  ids[idx].value  = malloc(strlen( sym_Cour.NOM));
+                  strcpy(ids[idx].value , sym_Cour.NOM); 
+                  printf("value of this  is %s \n"   , ids[idx].value) ;
+                  break;
+      case ID_TOKEN :
+                  break;
+      default :  Gen_Erreur(DEC_ERR);
+              break; 
+       }
+}
+
+void numoridwc(){
+  int t ; 
+  switch(sym_Cour.CODE){
+     case NUM_TOKEN :
+                  ids[idx].value  = malloc(strlen( sym_Cour.NOM));
+                  strcpy(ids[idx].value , sym_Cour.NOM); 
+                  printf("value of this  is %s \n"   , ids[idx].value) ;
+                  break;
+      case ID_TOKEN :
+                t= returnid() ;
+                if(strcmp(ids[t].value , "\0")==0)Gen_Erreur(NOT_INITIALIZED_ERR);
+                ids[idx].value = malloc(strlen(ids[t].value)+1); 
+                strcpy(ids[idx].value , ids[t].value); 
+                if(ids[idx].type != ids[t].type) Gen_Erreur(TYPE_DIFFERENT_ERR);
+                  break;
+      default :  Gen_Erreur(DEC_ERR);
+              break; 
        }
 }
 
 void numorid (){
      switch(sym_Cour.CODE){
      case NUM_TOKEN :
+                  ids[idx].value  = malloc(strlen( sym_Cour.NOM));
+                  strcpy(ids[idx].value , sym_Cour.NOM); 
+                  printf("value of this  is %s \n"   , ids[idx].value) ;
                   break;
       case ID_TOKEN :
                   break;
@@ -619,29 +761,8 @@ void if_ins(){
 
 void procedure(){
     Symbole_testing(PROCEDURE_TOKEN,ERR_PROCEDURE);
-    //printf("here 0 \n"); 
-    char * current  = (char * )malloc(strlen(find_current_procedure())+1);
-    strcpy(current ,find_current_procedure() );
-     // printf("here 1  9bal %s\n" , current ); 
-
-    if(strcmp(current , "")!=0) {
-      //printf("here 1 %s\n" , current ); 
-      strcat(current , ".");
-
-    }else current[0]='\0';
-    //printf("here 2 %s \n" , current); 
-    char *c ; 
-    c =(char * ) malloc( strlen(current) + strlen(sym_Cour.NOM)+2);
-    c[0]='\0';
-    strcat(c , (const char * )current);
-    strcat(c , (const char * )sym_Cour.NOM);
-    current =(char * ) malloc(strlen(c)+1);
-    strcpy(current , c ) ;
-    //printf("here 2 %s \n" , current); 
-    printf("the current procedure is  %s \n" , current); 
-    if(findID(current))  Gen_Erreur(PROCEDURE_NAME_ERR);
-    addID(current , PROCEDURE);
-    addprocedure(current);
+    char * current = (char*) malloc(50*sizeof(char));
+    strcpy(current, checkProcedureName());
     Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
     args(); 
     Symbole_testing(IS_TOKEN,ERR_IS);
@@ -649,16 +770,11 @@ void procedure(){
     Symbole_testing(BEGIN_TOKEN,ERR_BEGIN);
     procedure_body();
     Symbole_testing(END_TOKEN,ERR_END);
-    printf(" the sub procedure %s \n" , find_sub_procedure());
-    printf(" sym_Cour.NOM %s \n" , sym_Cour.NOM);
+    // cheking the ending name of the procedure 
     if(strcmpi(find_sub_procedure() , sym_Cour.NOM)!=0)Gen_Erreur(PROCEDURE_END_NAME_ERR);
     Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
-    printf("%s \n" , current);
-    addprocedure(current); 
+    addprocedure(current); //pour semantique
     Symbole_testing(PV_TOKEN,ERR_PV);
-    
-    //ajouter et look up le ID
-    //ajouterTIDF(CH,TPROG); // 
 }
 
 

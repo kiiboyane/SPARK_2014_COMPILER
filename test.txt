@@ -3,12 +3,10 @@ procedure GOO is
 begin
    null ; 
 end GOO;
-procedure g is
-begin
-   null ; 
-end g;
-
+G : Integer := 5; 
+Go : constant Integer := 5; 
 
 begin
+   g := gpp;
    null ; 
 end Main;
