@@ -2,7 +2,11 @@
 
 #define ANALYSEUR_LEXICAL_V0_INCLUDED
 
-
+#include<stdbool.h> 
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include <conio.h>
 
 typedef enum TOKENS
 {
@@ -98,7 +102,8 @@ typedef enum CODES_ERREURS{
     ERR_BEGIN,ERR_END,ERR_PV,ERR_PF,ERR_ARGS,
     ERR_COND,ERR_SEM,ERR_PO,ERR_P,TYPE_ERR,MODE_ERR,ERR_IMP,
     SPARK_MODE_ERR,ERR_NULL,DEC_ERR,ERR_CHARACTER,ERR_AP,INSTRUCTION_ERR,
-    ERR_LOOP,ERR_IN,ERR_PT,ERR_THEN,ERR_IF,CONDITION_ERR,ERR_FACT
+    ERR_LOOP,ERR_IN,ERR_PT,ERR_THEN,ERR_IF,CONDITION_ERR,ERR_FACT,/* start of semantic errors */
+    PROCEDURE_NAME_ERR , PROCEDURE_END_NAME_ERR
     
 }CODES_ERREURS;
 
@@ -111,17 +116,31 @@ typedef  struct{
 
 
 
+
+
+
+
 // Variables Globales
 
 char car_Cour;                  //caractère courant
 Token_sym_Cour sym_Cour;                //symbole courant
 FILE* fichier;
+int idx;
+int idx_procedure ;  
 extern Erreurs MES_ERR[100];
+
+
+
+
+void addID(); 
+bool findID();
+
 
 void afficherToken () ; 
 void sym_Suiv() ; 
 void Gen_Erreur(CODES_ERREURS  ERR);
 void lireCar();
 void lireMot();
+
 
 #endif

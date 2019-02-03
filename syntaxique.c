@@ -1,11 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <conio.h>
 #include"analyseur_lexical_v0.h"
 
 
-
+//char * current_procedure =malloc (69) ; 
 Erreurs MES_ERR[100]={{ERR_CAR_INC,"Caractère inconnu"},
                     {ERR_FICH_VID,"Fichier vide"},
                     {ERR_ID_LONG, "Identifiant très long" },
@@ -40,9 +36,91 @@ Erreurs MES_ERR[100]={{ERR_CAR_INC,"Caractère inconnu"},
                     {ERR_IF," 'if' expected "} ,
                     {CONDITION_ERR," condition error  "}, 
                     {ERR_FACT," erreur dans l'expression "}, 
+                    {PROCEDURE_NAME_ERR," the procedure\'s name already taken "}, 
+                    {PROCEDURE_NAME_ERR," mispelling of the procedure\'s name "}, 
                   };
 
 
+/*semantique part */
+
+typedef enum  identity{
+    PROCEDURE , VARIABLE , ARGUMENT  
+    
+}identity;
+
+struct id {
+  char* content;
+  char * type ; 
+  char * value ; 
+  identity where  ; 
+  bool constant ;   
+};
+
+struct id ids[1000];
+
+char * procedures_names[100] ; 
+void addID( char * new_id ,identity place ){
+  printf(" copying new_id : %s in idx %i\n",new_id , idx +1);
+  idx++ ; 
+  ids[idx].content= malloc (strlen(new_id)+1);
+  strcpy(ids[idx].content,new_id);
+  ids[idx].constant = false;  
+  ids[idx].where = place;  
+}
+
+void addprocedure ( char * procedure_name){
+  idx_procedure ++ ; 
+  procedures_names[idx_procedure]= malloc (strlen(procedure_name)+1);
+  strcpy(procedures_names[idx_procedure],procedure_name);
+}
+
+bool findID( char *  new_id){
+   bool  t=false; 
+   for(int i=0 ; i<=idx ; i++)
+         t= t || (strcmpi(new_id , ids[idx].content)==0? true : false) ; 
+    return t; 
+}
+
+void removelastprocedure(char * chaine ){
+   int  len  = strlen(chaine)  ; 
+   int i = len ; 
+   for( ; i>=0 ; i-- )if(chaine[i] =='.'){chaine[i]= '\0' ;  break ; } 
+}
+char * find_current_procedure (){
+   char* current="" ; 
+   for(int i=0 ; i<=idx_procedure; i++){
+      if (strcmp(current , procedures_names[i])==0) removelastprocedure(current) ;
+      else {
+        current = malloc(strlen( procedures_names[i])+1);
+        strcpy(current , procedures_names[i]); 
+        current[strlen( procedures_names[i])]='\0';
+      }
+   } 
+   //printf("%s \n" , current) ; 
+   return current ; 
+}
+
+char * find_sub_procedure (){
+   char * chaine = malloc(strlen(find_current_procedure())+1);
+   strcpy(chaine , find_current_procedure());
+   int  len  = strlen(chaine)  ; 
+   int i = len-1 ; 
+   for( ; i>=0 ; i-- ){
+    if(chaine[i] =='.'){  break ; }
+    }
+    char * subbuff = malloc(50);
+    memcpy( subbuff, &chaine[i+1], len-i );
+    subbuff[len-i] = '\0';
+   return subbuff;
+}
+
+char * find_parent_procedure(){
+
+}
+
+
+
+/*semantique part */
 
 /*void program () ; */
 void procedure () ; 
@@ -67,7 +145,6 @@ void procedure_body ();
 void condition() ;
 void numorid(); 
 void var_declaration(); 
-void declarations() ; 
 void declaration(); 
 void constant(); 
 void charorid(); 
@@ -86,6 +163,12 @@ void symbole_con();
 void fact(); 
 void term(); 
 
+
+
+/*semantic part */
+
+int idx_tokens; 
+/*semantic part */
 
 void Symbole_testing  (TOKENS cl, CODES_ERREURS err){
 
@@ -256,6 +339,7 @@ void while_ins (){
 
 void aff_ins(){
      Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
+     printf(" i am in aff \n" );
      Symbole_testing(AFF_TOKEN,ERR_AFFEC);
      expr();
 }
@@ -535,6 +619,29 @@ void if_ins(){
 
 void procedure(){
     Symbole_testing(PROCEDURE_TOKEN,ERR_PROCEDURE);
+    //printf("here 0 \n"); 
+    char * current  = (char * )malloc(strlen(find_current_procedure())+1);
+    strcpy(current ,find_current_procedure() );
+     // printf("here 1  9bal %s\n" , current ); 
+
+    if(strcmp(current , "")!=0) {
+      //printf("here 1 %s\n" , current ); 
+      strcat(current , ".");
+
+    }else current[0]='\0';
+    //printf("here 2 %s \n" , current); 
+    char *c ; 
+    c =(char * ) malloc( strlen(current) + strlen(sym_Cour.NOM)+2);
+    c[0]='\0';
+    strcat(c , (const char * )current);
+    strcat(c , (const char * )sym_Cour.NOM);
+    current =(char * ) malloc(strlen(c)+1);
+    strcpy(current , c ) ;
+    //printf("here 2 %s \n" , current); 
+    printf("the current procedure is  %s \n" , current); 
+    if(findID(current))  Gen_Erreur(PROCEDURE_NAME_ERR);
+    addID(current , PROCEDURE);
+    addprocedure(current);
     Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
     args(); 
     Symbole_testing(IS_TOKEN,ERR_IS);
@@ -542,7 +649,12 @@ void procedure(){
     Symbole_testing(BEGIN_TOKEN,ERR_BEGIN);
     procedure_body();
     Symbole_testing(END_TOKEN,ERR_END);
+    printf(" the sub procedure %s \n" , find_sub_procedure());
+    printf(" sym_Cour.NOM %s \n" , sym_Cour.NOM);
+    if(strcmpi(find_sub_procedure() , sym_Cour.NOM)!=0)Gen_Erreur(PROCEDURE_END_NAME_ERR);
     Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
+    printf("%s \n" , current);
+    addprocedure(current); 
     Symbole_testing(PV_TOKEN,ERR_PV);
     
     //ajouter et look up le ID
@@ -573,6 +685,8 @@ int main(int argc, char const *argv[])
     else printf("PAS BRAVO : fin de programme erronee !!!!");
 */
 
+  idx= -1 ;
+  idx_procedure =-1 ; 
   fichier = fopen("test.txt","r");
   first_sym();
   procedure();

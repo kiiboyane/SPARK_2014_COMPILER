@@ -1,12 +1,11 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
 #include"analyseur_lexical_v0.h"
 
 
 
 
 /////////////STRUCT TOKEN ///////////
+
+
 
 
 
@@ -140,6 +139,7 @@ void lireMot(){
     }
      else  {
         sym_Cour.CODE = ID_TOKEN;
+
         //strcpy(sym_Cour.NOM,sym_Cour.NOM);
     }
 

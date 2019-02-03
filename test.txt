@@ -1,31 +1,14 @@
-procedure Show_Illegal_SPARK_Code is
-
-   G : Integer := 0;
-
-   procedure F is
-      Tmp : constant Integer := G;
-   begin
-      G := G + 1;
-   end F;
+procedure Main is
+procedure GOO is
+begin
+   null ; 
+end GOO;
+procedure g is
+begin
+   null ; 
+end g;
 
 
 begin
-   
-    while I*A = 5+58 loop
-      null; 
-       while I <= 5 loop
-      null; 
-                     for I in 1 ..5 loop
-     G := G + 1;
-     null;
-     for I in 1 ..5 loop
-     null ;
-     G := G + 1;
-
-     end loop;
-   end loop;
-	      I := I + 1;
-	   end loop;
-      I := I + 1;
-   end loop;
-end Show_Illegal_SPARK_Code;
+   null ; 
+end Main;
