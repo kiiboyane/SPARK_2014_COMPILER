@@ -1,12 +1,15 @@
-procedure Main is
-procedure GOO is
+procedure Main ( P : Character   ;X ,Y: in out Integer   )is
+      procedure Main is
+      begin
+         null; 
+      end main;
+I : Integer := 1;      
+gg :  Integer := Y; --dfkjfdjkfdjkl
 begin
-   null ; 
-end GOO;
-G : Integer := 5; 
-Go : constant Integer := 5; 
+   while I >= 5 loop
 
-begin
-   g := gpp;
-   null ; 
-end Main;
+      I := I + 1;
+   end loop;
+   gg := Y/X+6;
+   null; 
+end main;

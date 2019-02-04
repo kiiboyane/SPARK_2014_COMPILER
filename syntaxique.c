@@ -47,9 +47,60 @@ Erreurs MES_ERR[100]={{ERR_CAR_INC,"Caractère inconnu"},
                     {PROCEDURE_AFF_ERR," you can't affect a value to procedure "}, 
                   };
 
+/* pseudo code */
+
+
+
+typedef enum  MNEMONIQUES{
+    ADD,SUB,MUL,DIV,EQL,NEQ,GTR,
+    LSS,GEQ,LEQ, PRN,INN,INT,LDI,LDA,LDV,
+    STO,BRN,BZE,HLT ,
+}MNEMONIQUES;
+
+
+
+typedef  struct mntxt {
+  MNEMONIQUES m ; 
+  char c[52] ; 
+}mntxt;
+
+char *  txts[2300] ={"ADD" ,  "SUB" ,  "MUL" ,  "DIV" ,  "EQL" ,  "NEQ" ,  "GTR" ,  "LSS" ,  "GEQ" ,  "LEQ" ,  "PRN" ,  "INN" ,  "INT" ,  "LDI" ,  "LDA" ,  "LDV" ,  "STO" ,  "BRN" , 
+           "BZE" ,"HLT"}; 
+
+
+typedef struct instruct {
+   MNEMONIQUES mme ; 
+   int suite ; 
+} instruct; 
+
+
+instruct pcode[1000] ;
+
+int  OFFSET ; 
+int PC ; 
+
+
+
+
+void generer (MNEMONIQUES m , int s ){
+  PC++;
+  pcode[PC].suite = s ; 
+  pcode[PC].mme = m; 
+ 
+}
+
+
+
+void generer_sans (MNEMONIQUES m  ){
+  PC++;
+  pcode[PC].mme = m; 
+  pcode[PC].suite =-1 ;
+}
+/* pseudo code */
 
 /*semantique part */
 
+int arg_num ; 
 typedef enum  identity{
     PROCEDURE , VARIABLE , ARGUMENT  
     
@@ -64,21 +115,23 @@ struct id {
   type_var type ; 
   char * value ; 
   identity where  ; 
-  bool constant ;   
+  bool constant ;
+  int index_id ;    
 } id;
 
 struct id ids[1000];
 
 char * procedures_names[100] ; 
 void addID( char * new_id ,identity place ){
-  printf(" copying new_id : %s in idx %i\n",new_id , idx +1);
+  //printf(" copying new_id : %s in idx %i\n",new_id , idx +1);
   idx++ ; 
   ids[idx].content= malloc (strlen(new_id)+1);
   strcpy(ids[idx].content,new_id);
   ids[idx].constant = false;  
   ids[idx].where = place;  
+  ids[idx].index_id = idx;  
   if(place == PROCEDURE) ids[idx].type = PROCEDURE_T  , ids[idx].value = "PROCEDURE" ;  
-  printf(" copying new_id : %s in idx %i\n",ids[idx].content, idx );
+  // printf(" copying new_id : %s in idx %i\n",ids[idx].content, idx );
 }
 
 void addprocedure ( char * procedure_name){
@@ -97,9 +150,9 @@ bool findID( char *  new_id){
 
 int findIDindexb(char *  new_id){
    for(int i=0 ; i<=idx ; i++){
-       printf(" ids %s \n" ,ids[i].content );
+     /*  printf(" ids %s \n" ,ids[i].content );
        printf(" new_id %s \n" ,new_id );
-       printf("  i = %d \n"  , i );
+       printf("  i = %d \n"  , i );*/
        if (strcmpi(new_id , ids[i].content)==0 ) return i  ; 
    }
    return -1; 
@@ -107,9 +160,9 @@ int findIDindexb(char *  new_id){
 
 int findIDindex(char *  new_id){
    for(int i=0 ; i<idx ; i++){
-       printf(" ids %s \n" ,ids[i].content );
+      /* printf(" ids %s \n" ,ids[i].content );
        printf(" new_id %s \n" ,new_id );
-       printf("  i = %d \n"  , i );
+       printf("  i = %d \n"  , i );*/
        if (strcmpi(new_id , ids[i].content)==0 ) return i  ; 
    }
    return -1; 
@@ -176,8 +229,9 @@ char *  checkProcedureName (){
 char *  checkVariableName (){
     char * current  = (char * )malloc(strlen(pathVariable())+1);
     strcpy(current ,pathVariable() );
+   // printf("current variable %s \n" , current);
     if(findID(current))  Gen_Erreur(VARIABLE_NAME_ERR);
-    printf("current in check %s" , current ); 
+    //printf("current in check %s" , current ); 
     addID(current , VARIABLE);
     return current  ; 
 }
@@ -186,18 +240,18 @@ char *  checkVariableName (){
 int   returnid (){
     char * current  = (char * )malloc(strlen(pathVariable())+1);
     strcpy(current ,pathVariable() );
-    printf("   id of g %s \n " , current );
+   // printf("   // g %s \n " , current );
     int  index  = findIDindex(current) ; 
-    printf("%d \n", index);
+    //printf("%d \n", index);
     if(index==-1)  Gen_Erreur(VARIABLE_NOT_FOUND_ERR);
     return index ; 
 }
 int   returnidb (){
     char * current  = (char * )malloc(strlen(pathVariable())+1);
     strcpy(current ,pathVariable() );
-    printf("   id of g %s \n " , current );
+   // printf("   id of g %s \n " , current );
     int  index  = findIDindexb(current) ; 
-    printf("%d \n", index);
+   // printf("%d \n", index);
     if(index==-1)  Gen_Erreur(VARIABLE_NOT_FOUND_ERR);
     return index ; 
 }
@@ -262,7 +316,6 @@ void Symbole_testing  (TOKENS cl, CODES_ERREURS err){
   { 
     afficherToken();
     sym_Suiv();
-
   }
   else
     Gen_Erreur(err);
@@ -299,26 +352,30 @@ void arg_dec_aux(){
      
 }
 void arg_dec (){
+   arg_num=0;
    id_tokens(); 
    Symbole_testing(P_TOKEN,ERR_P);
    switch(sym_Cour.CODE){
         case IN_TOKEN :
-                  sym_Suiv();
+                   afficherToken();sym_Suiv();
                   out();
                   break; 
         case OUT_TOKEN :
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   type();
                   break; 
         default : type();
                   break; 
        }
-   
+       for(int i = idx ; i>idx-arg_num  ; i--)  {
+                    ids[i].where=ARGUMENT ;
+         }
+
 }
 void out(){
   switch(sym_Cour.CODE){
         case OUT_TOKEN :
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   type();
                   break;  
         default : type();
@@ -328,16 +385,25 @@ void out(){
 void type(){
   switch(sym_Cour.CODE){
         case NATURAL_TOKEN :
-                  sym_Suiv();
+                  for(int i = idx ; i>idx-arg_num  ; i--)  {
+                    ids[i].type=NATURAL ;
+                  }
+                  afficherToken();sym_Suiv();
                   break; 
         case INTEGER_TOKEN :
-                  sym_Suiv();
+                  for(int i = idx ; i>idx-arg_num  ; i--) {ids[i].type=INTEGER ;
+                  }
+                  afficherToken();sym_Suiv();
                   break; 
         case POSITIVE_TOKEN :
-                  sym_Suiv();
+                  for(int i = idx ; i>idx-arg_num  ; i--){ ids[i].type=POSITIVE ;
+                  }
+                  afficherToken();sym_Suiv();
                   break; 
         case CHARACTER_TOKEN :
-                  sym_Suiv();
+                  for(int i = idx ; i>idx-arg_num  ; i--){ ids[i].type=CHARACTER ;
+                  }
+                  afficherToken();sym_Suiv();
                   break;  
         default : 
                   Gen_Erreur(TYPE_ERR);
@@ -349,24 +415,25 @@ void typewoc (){
     switch(sym_Cour.CODE){
         case NATURAL_TOKEN :
                   ids[idx].type = NATURAL; 
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   break; 
         case INTEGER_TOKEN :
                   ids[idx].type = INTEGER; 
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   break; 
         case POSITIVE_TOKEN :
                   ids[idx].type = POSITIVE; 
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   break;  
         default : 
                   Gen_Erreur(TYPE_ERR);
                   break; 
        }
-
 }
 void id_tokens(){
-   sym_Suiv();
+   afficherToken();sym_Suiv();
+   arg_num++;
+   checkVariableName ();
    Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
    id_tokens_aux() ;
 } 
@@ -374,7 +441,9 @@ void id_tokens(){
 void id_tokens_aux(){
    switch(sym_Cour.CODE){
         case V_TOKEN :
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
+                  arg_num++;
+                  checkVariableName ();
                   Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
                   id_tokens_aux();
                   break; 
@@ -383,7 +452,7 @@ void id_tokens_aux(){
 
 void modes (){
   if(sym_Cour.CODE != WITH_TOKEN) return ; 
-  sym_Suiv();
+  afficherToken();sym_Suiv();
   mode(); 
   mode_aux(); 
 }
@@ -391,23 +460,23 @@ void modes (){
 void mode (){
   switch(sym_Cour.CODE){
         case SPARK_MODE_TOKEN :
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   spark_mode();
                   break; 
         case DEPENDS_TOKEN :
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   depends_mode();
                   break; 
         case GLOBAL_TOKEN :
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   global_mode();
                   break; 
         case PRE_TOKEN : 
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   pre_mode();
                   break; 
         case POST_TOKEN :
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   post_mode();
                   break; 
         default :Gen_Erreur(MODE_ERR);
@@ -416,14 +485,17 @@ void mode (){
 }
 
 void while_ins (){
-     sym_Suiv();
+     afficherToken();sym_Suiv();
+     int indice_brn = PC+1 ; 
      condition();
+     generer_sans(BZE);
+     int indice_bze = PC;
      Symbole_testing(LOOP_TOKEN,ERR_LOOP);
      instructions() ; 
      Symbole_testing(END_TOKEN,ERR_END);
      Symbole_testing(LOOP_TOKEN,ERR_LOOP);
-
-
+     generer(BRN , indice_brn);
+     pcode[indice_bze].suite = PC+1;
 }
 
 void aff_ins(){
@@ -431,20 +503,22 @@ void aff_ins(){
      if(d==-1) Gen_Erreur(VARIABLE_NOT_FOUND_ERR);
      if(ids[d].constant) Gen_Erreur(CONSTANT_ERR);
      if(ids[d].type == PROCEDURE_T) Gen_Erreur(PROCEDURE_AFF_ERR);
+     generer(LDA  ,ids[d].index_id);
      Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
-     printf(" i am in aff \n" );
+     // printf(" i am in aff \n" );
      Symbole_testing(AFF_TOKEN,ERR_AFFEC);
      expr();
+     generer_sans(STO);
 }
 
 void spark_mode(){
     Symbole_testing(IMP_TOKEN,ERR_IMP);
     switch(sym_Cour.CODE){
         case ON_TOKEN :
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   break; 
         case OFF_TOKEN :
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   break; 
         default :Gen_Erreur(SPARK_MODE_ERR);
                 break; 
@@ -469,53 +543,69 @@ void pre_mode(){
     condition();
 }
 void condition (){
+    MNEMONIQUES lcl ;
     expr() ; 
-    symbole_con(); 
-    sym_Suiv();
+    symbole_con(&lcl); 
+    afficherToken();sym_Suiv();
     expr();
+    generer_sans(lcl);
 }
 
 void expr(){
+    MNEMONIQUES  lcl  ;
     term();
     while(sym_Cour.CODE == PLUS_TOKEN || sym_Cour.CODE == MOINS_TOKEN){
-        sym_Suiv();
+        if(sym_Cour.CODE == PLUS_TOKEN) lcl = ADD ; 
+        else lcl = SUB ; 
+        afficherToken();sym_Suiv();
         term();
+        generer_sans(lcl);
     }
 }
 
 void term(){
+    MNEMONIQUES lcl;
     fact();
     while(sym_Cour.CODE == MUL_TOKEN || sym_Cour.CODE == DIV_TOKEN){
-        sym_Suiv();
+        if(sym_Cour.CODE == MUL_TOKEN) lcl = MUL ; 
+        else lcl = DIV ;   
+        afficherToken();sym_Suiv();
         fact();
+        generer_sans(lcl);
     }
 }
 
 void fact(){
+    int t  ;
     switch(sym_Cour.CODE){
-        case ID_TOKEN :
-                       sym_Suiv(); break;
-        case NUM_TOKEN : sym_Suiv(); break;
-        case PO_TOKEN : sym_Suiv();
+        case ID_TOKEN : 
+                        t= returnid() ;
+                        //printf(" %d  argument %d   ---   %s  " , t, ids[t].where, ids[t].content );
+                        if(ids[idx].type != ids[t].type) Gen_Erreur(TYPE_DIFFERENT_ERR);
+                        generer(LDA   , t); 
+                        afficherToken();sym_Suiv(); break;
+        case NUM_TOKEN :generer(LDI , atoi(sym_Cour.NOM));
+                        afficherToken();sym_Suiv(); break;
+        case PO_TOKEN : afficherToken();sym_Suiv();
                         expr();
                         Symbole_testing(PF_TOKEN,ERR_PF);
                         break;
         default : Gen_Erreur(ERR_FACT);
     }
 }
-void symbole_con(){
+void symbole_con(MNEMONIQUES * lcl ){
    switch(sym_Cour.CODE){
-        case EG_TOKEN :
+        case EG_TOKEN : *lcl = EQL;
                   break; 
-        case DIFF_TOKEN :
+        case DIFF_TOKEN :*lcl=NEQ;
                   break; 
-        case INF_TOKEN :
+        case INF_TOKEN :*lcl=LSS;
                   break; 
-        case SUP_TOKEN :
+        case SUP_TOKEN :*lcl=GTR;
                   break; 
-        case INFEG_TOKEN :
+        case INFEG_TOKEN :*lcl=LEQ;
                   break; 
-        case SUPEG_TOKEN :
+        case SUPEG_TOKEN :*lcl=GEQ;
                   break; 
         default :Gen_Erreur(CONDITION_ERR);
                 break; 
@@ -528,7 +618,7 @@ void post_mode(){
 void mode_aux(){
   switch(sym_Cour.CODE){
         case V_TOKEN :
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   mode();
                   mode_aux();
                   break; 
@@ -567,13 +657,14 @@ void var_declaration(){
     Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);
     Symbole_testing(P_TOKEN,ERR_P);
     constant();
+    OFFSET++;
     var_declaration_aff(); 
 }
 void var_declaration_aff(){
    switch(sym_Cour.CODE){
      case CHARACTER_TOKEN :
                 ids[idx].type = CHARACTER; 
-                sym_Suiv();
+                afficherToken();sym_Suiv();
                 Symbole_testing(AFF_TOKEN,ERR_AFFEC);
                 charoridcharacter();
                 break;
@@ -581,7 +672,7 @@ void var_declaration_aff(){
               typewoc(); 
               Symbole_testing(AFF_TOKEN,ERR_AFFEC);
               numoridwc();
-              sym_Suiv();
+              afficherToken();sym_Suiv();
               break; 
        }
 }
@@ -590,20 +681,23 @@ void charoridcharacter(){
     switch(sym_Cour.CODE){
      case ID_TOKEN :
                  t= returnid() ;
-                  if(strcmp(ids[t].value , "\0")==0)Gen_Erreur(NOT_INITIALIZED_ERR);
-                 ids[idx].value = malloc(strlen(ids[t].value)+1); 
-                 strcpy(ids[idx].value , ids[t].value); 
+                 if(ids[t].where != ARGUMENT ){
+                       if(strcmp(ids[t].value , "\0")==0)Gen_Erreur(NOT_INITIALIZED_ERR);
+                       ids[idx].value = malloc(strlen(ids[t].value)+1); 
+                       strcpy(ids[idx].value , ids[t].value); 
+
+                 }
                  if(ids[idx].type != ids[t].type) Gen_Erreur(TYPE_DIFFERENT_ERR);
-                 sym_Suiv();
+                 afficherToken();sym_Suiv();
                  break;
       case AP_TOKEN :
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   if(strlen(sym_Cour.NOM)>1) Gen_Erreur(CHARACTER_ERR);
                   ids[idx].value  = malloc(strlen( sym_Cour.NOM));
                   strcpy(ids[idx].value , sym_Cour.NOM); 
-                  printf("value of this  is %s \n"   , ids[idx].value) ;
+                  //printf("value of this  is %s \n"   , ids[idx].value) ;
                   numoridcharacter();
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   Symbole_testing(AP_TOKEN,ERR_AP);
                   break;
       default :  Gen_Erreur(DEC_ERR);
@@ -614,7 +708,7 @@ void constant(){
    switch(sym_Cour.CODE){
      case CONSTANT_TOKEN :
                   ids[idx].constant = true; 
-                  sym_Suiv();
+                  afficherToken();sym_Suiv();
                   break;
       default :   break; 
        }
@@ -624,7 +718,7 @@ void numoridcharacter(){
      case NUM_TOKEN :
                   ids[idx].value  = malloc(strlen( sym_Cour.NOM));
                   strcpy(ids[idx].value , sym_Cour.NOM); 
-                  printf("value of this  is %s \n"   , ids[idx].value) ;
+                  //printf("value of this  is %s \n"   , ids[idx].value) ;
                   break;
       case ID_TOKEN :
                   break;
@@ -639,13 +733,16 @@ void numoridwc(){
      case NUM_TOKEN :
                   ids[idx].value  = malloc(strlen( sym_Cour.NOM));
                   strcpy(ids[idx].value , sym_Cour.NOM); 
-                  printf("value of this  is %s \n"   , ids[idx].value) ;
+                  //printf("value of this  is %s \n"   , ids[idx].value) ;
                   break;
       case ID_TOKEN :
                 t= returnid() ;
-                if(strcmp(ids[t].value , "\0")==0)Gen_Erreur(NOT_INITIALIZED_ERR);
-                ids[idx].value = malloc(strlen(ids[t].value)+1); 
-                strcpy(ids[idx].value , ids[t].value); 
+               // printf("   argument %d   ---   %s  " , ids[t].where, ids[t].content );
+                if(ids[t].where != ARGUMENT){
+                    if(strcmp(ids[t].value , "\0")==0)Gen_Erreur(NOT_INITIALIZED_ERR);
+                    ids[idx].value = malloc(strlen(ids[t].value)+1); 
+                   strcpy(ids[idx].value , ids[t].value); 
+                }
                 if(ids[idx].type != ids[t].type) Gen_Erreur(TYPE_DIFFERENT_ERR);
                   break;
       default :  Gen_Erreur(DEC_ERR);
@@ -658,7 +755,7 @@ void numorid (){
      case NUM_TOKEN :
                   ids[idx].value  = malloc(strlen( sym_Cour.NOM));
                   strcpy(ids[idx].value , sym_Cour.NOM); 
-                  printf("value of this  is %s \n"   , ids[idx].value) ;
+                 // printf("value of this  is %s \n"   , ids[idx].value) ;
                   break;
       case ID_TOKEN :
                   break;
@@ -711,7 +808,7 @@ void instruction(){
 /*void procedure_aff (){
       Symbole_testing(PO_TOKEN,ERR_PO);
       if(sym_Cour.CODE == ID_TOKEN){
-        sym_Suiv(); 
+        afficherToken();sym_Suiv(); 
          while(sym_Cour.CODE == V_TOKEN) {
                 Symbole_testing(ID_TOKEN,ERR_ID_PROCEDURE);  
             }
@@ -740,22 +837,24 @@ void for_ins(){
 }
 void range (){
     numorid(); 
-    sym_Suiv();
+    afficherToken();sym_Suiv();
     Symbole_testing(PT_TOKEN,ERR_PT);
     Symbole_testing(PT_TOKEN,ERR_PT);
     numorid(); 
-    sym_Suiv();
+    afficherToken();sym_Suiv();
 }
 
 void if_ins(){
     sym_Suiv() ;
-    condition(); 
+    condition();
+    generer_sans(BZE);
+    int indice_bze = PC ;  
     Symbole_testing(THEN_TOKEN,ERR_THEN);
     instructions();
     // elseaux();
     Symbole_testing(END_TOKEN,ERR_END);
     Symbole_testing(IF_TOKEN,ERR_IF);
-
+    pcode[indice_bze].suite = PC+1 ;
 }
 
 
@@ -768,6 +867,8 @@ void procedure(){
     Symbole_testing(IS_TOKEN,ERR_IS);
     declarations(); 
     Symbole_testing(BEGIN_TOKEN,ERR_BEGIN);
+    pcode[PC].mme= INT ; 
+    pcode[PC].suite=OFFSET ;
     procedure_body();
     Symbole_testing(END_TOKEN,ERR_END);
     // cheking the ending name of the procedure 
@@ -786,7 +887,7 @@ void first_sym(){
 
     lireCar(); 
 
-    sym_Suiv();
+    afficherToken();sym_Suiv();
 }
 
 int main(int argc, char const *argv[])
@@ -800,16 +901,34 @@ int main(int argc, char const *argv[])
     }
     else printf("PAS BRAVO : fin de programme erronee !!!!");
 */
-
+  OFFSET = 0;
+   PC =0; 
+  arg_num = 0;
   idx= -1 ;
   idx_procedure =-1 ; 
   fichier = fopen("test.txt","r");
   first_sym();
   procedure();
+  generer_sans(HLT) ;/*
   printf(" success \n");
+
+  printf(" %d \n" , PC );
+*/
+  FILE * fichier_dest =fopen("text.txt", "w") ; 
+  for(int i=0 ; i<=PC ; i++ ){
+       fprintf(fichier_dest , "%s " ,txts[ pcode[i].mme ] , pcode[i].suite );
+       printf("%s " ,txts[ pcode[i].mme ] , pcode[i].suite );
+       if( pcode[i].suite !=-1){
+          printf("%d"  , pcode[i].suite );
+          fprintf(fichier_dest,"%d"  , pcode[i].suite );
+       }
+     printf("\n");
+     fprintf(fichier_dest,"\n");
+
+  }
   /* lireCar();
   while (car_Cour!=EOF) {
-      sym_Suiv();
+      afficherToken();sym_Suiv();
       afficherToken();*/
       //cleanUp();
   //}

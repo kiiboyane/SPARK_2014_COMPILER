@@ -115,13 +115,6 @@ typedef  struct{
 }Erreurs;
 
 
-
-
-
-
-
-
-
 // Variables Globales
 
 char car_Cour;                  //caractère courant
@@ -143,6 +136,9 @@ void sym_Suiv() ;
 void Gen_Erreur(CODES_ERREURS  ERR);
 void lireCar();
 void lireMot();
+
+
+int offset ; 
 
 
 #endif

@@ -166,6 +166,7 @@ void lireCommentaire(){
             lireCar();
         }
         sym_Cour.CODE = COMMENTAIRE_TOKEN;
+        sym_Suiv();
     }
     else{
         sym_Cour.CODE=ERREUR_TOKEN;
@@ -173,7 +174,7 @@ void lireCommentaire(){
 }
 
 void afficherToken(){
-    switch(sym_Cour.CODE){
+    /*switch(sym_Cour.CODE){
         case 1000 : printf("PROCEDURE_TOKEN"); break;
         case 1001 : printf("IN_TOKEN "); break;
         case 1002 : printf("OUT_TOKEN "); break;
@@ -234,11 +235,12 @@ void afficherToken(){
 
     }
     printf("\n");
-    printf("\t %s \n",sym_Cour.NOM);
+    printf("\t %s \n",sym_Cour.NOM);*/
 }
 
 void sym_Suiv(){
     //cleanUp();
+
 
     while(car_Cour == 32 || car_Cour==9 || car_Cour == 10 || car_Cour == 13){ // espace tabulation retour chariot
         lireCar();
@@ -304,6 +306,7 @@ void sym_Suiv(){
                 //lireCar();
         }
     }
+      //afficherToken();
 }
 
 
